@@ -36,11 +36,43 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Body
+                    <div class="container-fluid">
+                        <form action="" method="post">
+                           <div class="mb-3">
+                               <label for="id" class="form-label">ID:</label>
+                               <input type="text" class="form-control" name="id" id="id" aria-describedby="helpId" placeholder="ID:" />
+                           </div>
+
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label">Título:</label>
+                                <input type="text" class="form-control" name="titulo" id="titulo" aria-describedby="helpId" placeholder="Título:" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fecha" class="form-label">Fecha:</label>
+                                <input type="text" class="form-control" name="fecha" id="fecha" aria-describedby="helpId" placeholder="Fecha:" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="hora" class="form-label">Horario do Evento:</label>
+                                <input type="time" class="form-control" name="hora" id="hora" aria-describedby="helpId" placeholder="Hora:" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descricao" class="form-label">Descrição:</label>
+                                <textarea class="form-control" name="descricao" id="descricao" rows="3" placeholder="descição:"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="cor" class="form-label">Cor:</label>
+                                <input type="color" class="form-control" name="cor" id="cor" aria-describedby="helpId" placeholder="cor:" />
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button"  onclick="addEvent()" class="btn btn-primary">Salvar</button>
                 </div>
             </div>
         </div>
@@ -68,10 +100,27 @@
             dateClick: function (information) {
                 alert("Pressionado " + information.dateStr);
                 modalEvent.show();
-            }
+            },
+            events: "api.php"
         });
         calendar.render();
     });
+</script>
+<script>
+    function addEvent(){
+        var event = new FormData();
+        event.append("id", document.getElementById('id').value);
+        event.append("titulo", document.getElementById('titulo').value);
+        event.append("fecha", document.getElementById('fecha').value);
+        event.append("hora", document.getElementById('hora').value);
+        event.append("descricao", document.getElementById('descricao').value);
+        event.append("cor", document.getElementById('cor').value);
+
+        for(var value of event.values()){
+            console.log(value)
+        }
+
+    }
 </script>
 
 </body>
