@@ -30,7 +30,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modelTitleId">Modal Title</h4>
+                    <h4 class="modal-title" id="modelTitleId">Dados do evento</h4>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -38,41 +38,50 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <form action="" method="post">
-                           <div class="mb-3">
-                               <label for="id" class="form-label">ID:</label>
-                               <input type="text" class="form-control" name="id" id="id" aria-describedby="helpId" placeholder="ID:" />
-                           </div>
-
-                            <div class="mb-3">
-                                <label for="titulo" class="form-label">Título:</label>
-                                <input type="text" class="form-control" name="titulo" id="titulo" aria-describedby="helpId" placeholder="Título:" />
+                            <div class="mb-3 visually-hidden">
+                                <label for="id" class="form-label">ID:</label>
+                                <input type="text" class="form-control" name="id" id="id" aria-describedby="helpId"
+                                       placeholder="ID:"/>
                             </div>
 
                             <div class="mb-3">
+                                <label for="title" class="form-label">Título:</label>
+                                <input type="text" class="form-control" name="title" id="title"
+                                       aria-describedby="helpId" placeholder="Título:"/>
+                            </div>
+
+                            <div class="mb-3 visually-hidden">
                                 <label for="fecha" class="form-label">Fecha:</label>
-                                <input type="text" class="form-control" name="fecha" id="fecha" aria-describedby="helpId" placeholder="Fecha:" />
+                                <input type="text" class="form-control" name="fecha" id="fecha"
+                                       aria-describedby="helpId" placeholder="Fecha:"/>
                             </div>
 
                             <div class="mb-3">
                                 <label for="hora" class="form-label">Horario do Evento:</label>
-                                <input type="time" class="form-control" name="hora" id="hora" aria-describedby="helpId" placeholder="Hora:" />
+                                <input type="time" class="form-control" name="hora" id="hora" aria-describedby="helpId"
+                                       placeholder="Hora:"/>
                             </div>
 
                             <div class="mb-3">
-                                <label for="descricao" class="form-label">Descrição:</label>
-                                <textarea class="form-control" name="descricao" id="descricao" rows="3" placeholder="descição:"></textarea>
+                                <label for="description" class="form-label">Descrição:</label>
+                                <textarea class="form-control" name="description" id="description" rows="3"
+                                          placeholder="Descrição:"></textarea>
                             </div>
 
                             <div class="mb-3">
-                                <label for="cor" class="form-label">Cor:</label>
-                                <input type="color" class="form-control" name="cor" id="cor" aria-describedby="helpId" placeholder="cor:" />
+                                <label for="color" class="form-label">Cor:</label>
+                                <input type="color" class="form-control" name="color" id="color"
+                                       aria-describedby="helpId"
+                                       placeholder="color:"/>
                             </div>
                         </form>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button"  onclick="addEvent()" class="btn btn-primary">Salvar</button>
+                    <button type="button" onclick="delEvent()" class="btn btn-danger" id="btnDeletar"
+                            data-bs-dismiss="modal">deletar
+                    </button>
+                    <button type="button" onclick="addEvent()" class="btn btn-primary" id="btnSalvar">Salvar</button>
                 </div>
             </div>
         </div>
@@ -84,12 +93,14 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
 
 <script>
-    var modalEvent
-    modalEvent = new bootstrap.Modal(document.getElementById('modalEvent'), {keyboard: false})
+    var modalEvent;
+    var calendar;
+
+    modalEvent = new bootstrap.Modal(document.getElementById('modalEvent'), {keyboard: false});
 
     document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
+        calendar = new FullCalendar.Calendar(calendarEl, {
             //initialView: 'dayGridMonth',
             locale: "pt",
             headerToolbar: {
@@ -98,8 +109,12 @@
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             dateClick: function (information) {
-                alert("Pressionado " + information.dateStr);
+                clearForm(information.dateStr);
                 modalEvent.show();
+            },
+            eventClick: function (information) {
+                modalEvent.show();
+                recoverDataEvent(information.event);
             },
             events: "api.php"
         });
@@ -107,19 +122,72 @@
     });
 </script>
 <script>
-    function addEvent(){
-        var event = new FormData();
-        event.append("id", document.getElementById('id').value);
-        event.append("titulo", document.getElementById('titulo').value);
-        event.append("fecha", document.getElementById('fecha').value);
-        event.append("hora", document.getElementById('hora').value);
-        event.append("descricao", document.getElementById('descricao').value);
-        event.append("cor", document.getElementById('cor').value);
+    function recoverDataEvent(event) {
+        clearErrors()
 
-        for(var value of event.values()){
-            console.log(value)
+        var fecha = event.startStr.split("T");
+        var hora = fecha[1].split(":")
+
+        document.getElementById('id').value = event.id;
+        document.getElementById('title').value = event.title;
+        document.getElementById('description').value = event.extendedProps.description;
+        document.getElementById('color').value = event.backgroundColor;
+        document.getElementById('fecha').value = fecha[0];
+        document.getElementById('hora').value = hora[0] + ':' + hora[1];
+
+        document.getElementById('btnDeletar').removeAttribute('disabled','');
+        document.getElementById('btnSalvar').removeAttribute('disabled','');
+    }
+
+    function delEvent() {
+        sendDataApi('delete');
+    }
+
+    function addEvent() {
+        if(document.getElementById('title').value==""){
+            document.getElementById('title').classList.add('is-invalid');
+            return true;
         }
 
+        var action = (document.getElementById('id').value == 0) ? 'create' : 'update';
+        console.log(action);
+        sendDataApi(action);
+    }
+
+    function sendDataApi(action) {
+        fetch("api.php?action=" + action, {
+            method: "POST",
+            body: reconnectData()
+        }).then(data => {
+            calendar.refetchEvents();
+            modalEvent.hide();
+        }).catch(error => console.log(error));
+    }
+
+    function reconnectData() {
+        var event = new FormData();
+        event.append("id", document.getElementById('id').value);
+        event.append("title", document.getElementById('title').value);
+        event.append("fecha", document.getElementById('fecha').value);
+        event.append("hora", document.getElementById('hora').value);
+        event.append("description", document.getElementById('description').value);
+        event.append("color", document.getElementById('color').value);
+        return event;
+    }
+
+    function clearForm(fecha) {
+        clearErrors();
+        document.getElementById('id').value = "";
+        document.getElementById('title').value = "";
+        document.getElementById('fecha').value = fecha;
+        document.getElementById('hora').value = "12:00";
+        document.getElementById('description').value = "";
+        document.getElementById('color').value = "";
+        document.getElementById('btnDeletar').setAttribute('disabled','disabled');
+    }
+
+    function clearErrors(){
+        document.getElementById('title').classList.remove('is-invalid');
     }
 </script>
 
